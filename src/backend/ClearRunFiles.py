@@ -6,7 +6,7 @@ def clear_runfiles():
     Delete all files and subdirectories within the 'runfiles' directory.
     """
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    target_dir = os.path.join(base_dir, "dummyrunfiles")
+    target_dir = os.path.join(base_dir, "runfiles")
 
     if not os.path.isdir(target_dir):
         print(f"No 'runfiles' directory found at {target_dir}")
