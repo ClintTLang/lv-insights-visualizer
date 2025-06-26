@@ -25,16 +25,39 @@ const Index = () => {
     })
   );
 
-  // Combine data for the chart - merge by timestamp
-  const combinedData = instaData.map((instaItem) => {
-    const wechatItem = wechatData.find(w => w.timestamp === instaItem.timestamp);
+  // Get all unique timestamps from both datasets and sort them
+  const allTimestamps = [...new Set([
+    ...instaData.map(item => item.timestamp),
+    ...wechatData.map(item => item.timestamp)
+  ])].sort();
+
+  // Create combined data covering the full time range
+  const combinedData = allTimestamps.map((timestamp) => {
+    const instaItem = instaData.find(item => item.timestamp === timestamp);
+    const wechatItem = wechatData.find(item => item.timestamp === timestamp);
+    
     return {
-      time: instaItem.time,
-      timestamp: instaItem.timestamp,
-      instagram: instaItem.hashtags,
+      time: timestamp.slice(11),
+      timestamp,
+      instagram: instaItem ? instaItem.hashtags : 0,
       wechat: wechatItem ? wechatItem.hashtags : 0,
     };
   });
+
+  // Calculate total period
+  const startTime = new Date(allTimestamps[0]);
+  const endTime = new Date(allTimestamps[allTimestamps.length - 1]);
+  const totalHours = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60));
+  const startTimeFormatted = startTime.toTimeString().slice(0, 5);
+  const endTimeFormatted = endTime.toTimeString().slice(0, 5);
+
+  // Calculate peak engagement from both platforms
+  const allValues = combinedData.flatMap(item => [item.instagram, item.wechat]).filter(val => val > 0);
+  const peakEngagement = Math.max(...allValues);
+
+  // Calculate average engagement
+  const nonZeroValues = allValues.filter(val => val > 0);
+  const averageEngagement = Math.round(nonZeroValues.reduce((sum, val) => sum + val, 0) / nonZeroValues.length);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -68,18 +91,18 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Peak Engagement</h3>
-            <p className="text-2xl font-bold text-white">264</p>
-            <p className="text-xs text-green-400 mt-1">+438% from start</p>
+            <p className="text-2xl font-bold text-white">{peakEngagement}</p>
+            <p className="text-xs text-green-400 mt-1">+{Math.round(((peakEngagement - Math.min(...allValues)) / Math.min(...allValues)) * 100)}% from minimum</p>
           </div>
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Average</h3>
-            <p className="text-2xl font-bold text-white">239</p>
+            <p className="text-2xl font-bold text-white">{averageEngagement}</p>
             <p className="text-xs text-blue-400 mt-1">per 10min period</p>
           </div>
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Total Period</h3>
-            <p className="text-2xl font-bold text-white">24 hrs</p>
-            <p className="text-xs text-gray-400 mt-1">21:50 - 22:40</p>
+            <p className="text-2xl font-bold text-white">{totalHours} hrs</p>
+            <p className="text-xs text-gray-400 mt-1">{startTimeFormatted} - {endTimeFormatted}</p>
           </div>
         </div>
 
