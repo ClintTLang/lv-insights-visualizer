@@ -82,8 +82,8 @@ const Index = () => {
       {/* Header */}
       <div className="border-b border-gray-700 bg-gray-850">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <h1 className="text-3xl font-bold text-white mb-2">LVMH Engagement Statistics</h1>
-          <p className="text-gray-400">Instagram hashtag tracking for Louis Vuitton, Christian Dior, Fendi, and Givenchy</p>
+          <h1 className="text-3xl font-bold text-white mb-2">LVMH vs Guochao</h1>
+          <p className="text-gray-400">Social Media Engagement Statistics</p>
         </div>
       </div>
 
