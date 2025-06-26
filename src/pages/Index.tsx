@@ -51,13 +51,14 @@ const Index = () => {
   const startTimeFormatted = startTime.toTimeString().slice(0, 5);
   const endTimeFormatted = endTime.toTimeString().slice(0, 5);
 
-  // Calculate peak engagement from both platforms
-  const allValues = combinedData.flatMap(item => [item.instagram, item.wechat]).filter(val => val !== null && val > 0);
-  const peakEngagement = Math.max(...allValues);
-
-  // Calculate average engagement
-  const nonZeroValues = allValues.filter(val => val > 0);
-  const averageEngagement = Math.round(nonZeroValues.reduce((sum, val) => sum + val, 0) / nonZeroValues.length);
+  // Calculate separate stats for each platform
+  const instaValues = instaData.map(item => item.hashtags).filter(val => val > 0);
+  const wechatValues = wechatData.map(item => item.hashtags).filter(val => val > 0);
+  
+  const instaPeak = Math.max(...instaValues);
+  const wechatPeak = Math.max(...wechatValues);
+  const instaAverage = Math.round(instaValues.reduce((sum, val) => sum + val, 0) / instaValues.length);
+  const wechatAverage = Math.round(wechatValues.reduce((sum, val) => sum + val, 0) / wechatValues.length);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -90,21 +91,51 @@ const Index = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Peak Engagement</h3>
-            <p className="text-2xl font-bold text-white">{peakEngagement}</p>
-            <p className="text-xs text-green-400 mt-1">+{Math.round(((peakEngagement - Math.min(...allValues)) / Math.min(...allValues)) * 100)}% from minimum</p>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-blue-400 text-sm">Instagram</span>
+                <span className="text-xl font-bold text-white">{instaPeak.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-red-400 text-sm">WeChat</span>
+                <span className="text-xl font-bold text-white">{wechatPeak.toLocaleString()}</span>
+              </div>
+            </div>
           </div>
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Average</h3>
-            <p className="text-2xl font-bold text-white">{averageEngagement}</p>
-            <p className="text-xs text-blue-400 mt-1">per 10min period</p>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-blue-400 text-sm">Instagram</span>
+                <span className="text-xl font-bold text-white">{instaAverage.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-red-400 text-sm">WeChat</span>
+                <span className="text-xl font-bold text-white">{wechatAverage.toLocaleString()}</span>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">per 10min period</p>
           </div>
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Total Period</h3>
             <p className="text-2xl font-bold text-white">{totalHours} hrs</p>
             <p className="text-xs text-gray-400 mt-1">{startTimeFormatted} - {endTimeFormatted}</p>
+          </div>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+            <h3 className="text-sm font-medium text-gray-400 mb-2">Data Types</h3>
+            <div className="space-y-2 text-xs">
+              <div>
+                <span className="text-blue-400 font-medium">LVMH:</span>
+                <p className="text-gray-300">Instagram hashtags for Louis Vuitton, Christian Dior, and Fendi</p>
+              </div>
+              <div>
+                <span className="text-red-400 font-medium">Guochao:</span>
+                <p className="text-gray-300">WeChat hashtags for M Essential, Uma Wang, and Samuel Gui Yang</p>
+              </div>
+            </div>
           </div>
         </div>
 
