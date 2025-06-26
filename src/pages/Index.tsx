@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Ignore IDE flags, files will be made at build
@@ -7,6 +6,7 @@ import instadata from '../backend/runfiles/instadata.json';
 import wechatdata from '../backend/runfiles/wechatdata.json';
 
 const Index = () => {
+  const [showDataTypesInfo, setShowDataTypesInfo] = useState(false);
   // Build instaData from instadata.json
   const instaData = Object.entries(instadata).map(
     ([timestamp, count]) => ({
@@ -48,8 +48,23 @@ const Index = () => {
   const startTime = new Date(allTimestamps[0]);
   const endTime = new Date(allTimestamps[allTimestamps.length - 1]);
   const totalHours = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60));
-  const startTimeFormatted = startTime.toTimeString().slice(0, 5);
-  const endTimeFormatted = endTime.toTimeString().slice(0, 5);
+  // Format date and time with month/day/year and 12-hour clock without leading zeros
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  };
+  const startTimeFormatted = startTime.toLocaleString('en-US', timeOptions).replace(',', '');
+  const endTimeFormatted = endTime.toLocaleString('en-US', timeOptions).replace(',', '');
+
+  // Split date and time for Total Period display
+  const startDateFmt = startTime.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+  const endDateFmt   = endTime.toLocaleString('en-US',   { month: 'short', day: 'numeric' });
+  const startTimeOnly = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const endTimeOnly   = endTime.toLocaleTimeString('en-US',   { hour: 'numeric', minute: '2-digit', hour12: true });
 
   // Calculate separate stats for each platform
   const instaValues = instaData.map(item => item.hashtags).filter(val => val > 0);
@@ -100,66 +115,120 @@ const Index = () => {
             <h3 className="text-sm font-medium text-gray-400 mb-2">Peak Engagement</h3>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-blue-400 text-sm">Instagram</span>
+                <div>
+                  <span className="text-blue-400 font-bold text-lg">LVMH</span><br/>
+                  <span className="text-sm text-blue-400 ml-2">on Instagram</span>
+                </div>
                 <div className="text-right">
-                  <span className="text-xl font-bold text-white">{instaPeak.toLocaleString()}</span>
-                  <p className="text-xs text-gray-400">at {instaPeakTime}</p>
+                  <span className="text-2xl font-bold text-white">{instaPeak.toLocaleString()}</span>
+                  <p className="text-sm text-gray-400">at {instaPeakTime}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-red-400 text-sm">WeChat</span>
+                <div>
+                  <span className="text-red-400 font-bold text-lg">Guochao</span><br/>
+                  <span className="text-sm text-red-400 ml-2">on WeChat</span>
+                </div>
                 <div className="text-right">
-                  <span className="text-xl font-bold text-white">{wechatPeak.toLocaleString()}</span>
-                  <p className="text-xs text-gray-400">at {wechatPeakTime}</p>
+                  <span className="text-2xl font-bold text-white">{wechatPeak.toLocaleString()}</span>
+                  <p className="text-sm text-gray-400">at {wechatPeakTime}</p>
                 </div>
               </div>
             </div>
           </div>
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 flex flex-col justify-between">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Average</h3>
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-blue-400 text-sm">Instagram</span>
-                <span className="text-xl font-bold text-white">{instaAverage.toLocaleString()}</span>
+                <div>
+                  <span className="text-blue-400 font-bold text-lg">LVMH</span><br/>
+                  <span className="text-sm text-blue-400 ml-2">on Instagram</span>
+                </div>
+                <span className="text-2xl font-bold text-white">{instaAverage.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-red-400 text-sm">WeChat</span>
-                <span className="text-xl font-bold text-white">{wechatAverage.toLocaleString()}</span>
+                <div>
+                  <span className="text-red-400 font-bold text-lg">Guochao</span><br/>
+                  <span className="text-sm text-red-400 ml-2">on WeChat</span>
+                </div>
+                <span className="text-2xl font-bold text-white">{wechatAverage.toLocaleString()}</span>
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">per 10min period</p>
+            <p className="text-xs text-gray-400 text-center mt-4">per 10min period</p>
           </div>
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Total Period</h3>
             <p className="text-2xl font-bold text-white">{totalHours} hrs</p>
-            <p className="text-xs text-gray-400 mt-1">{startTimeFormatted} - {endTimeFormatted}</p>
-          </div>
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-            <h3 className="text-sm font-medium text-gray-400 mb-2">Data Types</h3>
-            <div className="space-y-3 text-xs">
+            <div className="flex justify-between mt-4">
               <div>
-                <div className="flex items-center">
-                  <span className="text-blue-400 font-medium">LVMH:</span>
-                  <span className="text-white ml-1">Instagram hashtags</span>
-                </div>
-                <ul className="mt-1 ml-4 text-gray-300">
-                  <li>• Louis Vuitton</li>
-                  <li>• Christian Dior</li>
-                  <li>• Fendi</li>
-                </ul>
+                <p className="text-sm text-gray-400">
+                  <strong>{startDateFmt}</strong>, {startTime.getFullYear()}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {startTimeOnly}
+                </p>
               </div>
+              <span className="mx-2 text-sm text-gray-400">↔</span>
               <div>
-                <div className="flex items-center">
-                  <span className="text-red-400 font-medium">Guochao:</span>
-                  <span className="text-white ml-1">WeChat hashtags</span>
-                </div>
-                <ul className="mt-1 ml-4 text-gray-300">
-                  <li>• M Essential</li>
-                  <li>• Uma Wang</li>
-                  <li>• Samuel Gui Yang</li>
-                </ul>
+                <p className="text-sm text-gray-400">
+                  <strong>{endDateFmt}</strong>, {endTime.getFullYear()}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {endTimeOnly}
+                </p>
               </div>
             </div>
+          </div>
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-gray-400">Data Types</h3>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5 text-gray-400 cursor-pointer"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                onMouseEnter={() => setShowDataTypesInfo(true)}
+                onMouseLeave={() => setShowDataTypesInfo(false)}
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            </div>
+            {showDataTypesInfo ? (
+              <p className="text-gray-300 text-sm">
+                For each brand, the data gathered includes the three most common variations of its associated hashtag (i.e. Louis Vuitton: “#louisvuitton”, “louisv”, and “lv”).
+              </p>
+            ) : (
+              <div className="space-y-3 text-xs">
+                <div>
+                  <div className="flex items-center">
+                    <span className="text-blue-400 font-medium">LVMH:</span>
+                    <span className="text-white ml-1">Instagram hashtags</span>
+                  </div>
+                  <ul className="mt-1 ml-4 text-gray-300">
+                    <li>• Louis Vuitton</li>
+                    <li>• Christian Dior</li>
+                    <li>• Fendi</li>
+                  </ul>
+                </div>
+                <div>
+                  <div className="flex items-center">
+                    <span className="text-red-400 font-medium">Guochao:</span>
+                    <span className="text-white ml-1">WeChat hashtags</span>
+                  </div>
+                  <ul className="mt-1 ml-4 text-gray-300">
+                    <li>• M Essential</li>
+                    <li>• Uma Wang</li>
+                    <li>• Samuel Gui Yang</li>
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -229,15 +298,21 @@ const Index = () => {
                 <tr className="border-b border-gray-700">
                   <th className="text-left py-3 px-4 text-gray-400 font-medium">Timestamp</th>
                   <th className="text-left py-3 px-4 text-gray-400 font-medium">Time</th>
-                  <th className="text-left py-3 px-4 text-gray-400 font-medium">Hashtag Count</th>
+                  <th className="text-left py-3 px-4 text-gray-400 font-medium">Instagram Count</th>
+                  <th className="text-left py-3 px-4 text-gray-400 font-medium">WeChat Count</th>
                 </tr>
               </thead>
               <tbody>
-                {instaData.map((item, index) => (
+                {combinedData.map((item, index) => (
                   <tr key={index} className="border-b border-gray-700 hover:bg-gray-750">
                     <td className="py-3 px-4 text-gray-300">{item.timestamp}</td>
                     <td className="py-3 px-4 text-white font-medium">{item.time}</td>
-                    <td className="py-3 px-4 text-blue-400 font-semibold">{item.hashtags.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-blue-400 font-semibold">
+                      {item.instagram != null ? item.instagram.toLocaleString() : '-'}
+                    </td>
+                    <td className="py-3 px-4 text-red-400 font-semibold">
+                      {item.wechat != null ? item.wechat.toLocaleString() : '-'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
