@@ -147,7 +147,7 @@ const Index = () => {
                   dataKey="instagram" 
                   stroke="#3B82F6" 
                   strokeWidth={2}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 2 }}
+                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 1 }}
                   activeDot={{ r: 3, fill: '#60A5FA' }}
                   connectNulls={false}
                 />
@@ -156,7 +156,7 @@ const Index = () => {
                   dataKey="wechat" 
                   stroke="#EF4444" 
                   strokeWidth={2}
-                  dot={{ fill: '#EF4444', strokeWidth: 2, r: 2 }}
+                  dot={{ fill: '#EF4444', strokeWidth: 2, r: 1 }}
                   activeDot={{ r: 3, fill: '#F87171' }}
                   connectNulls={false}
                 />
