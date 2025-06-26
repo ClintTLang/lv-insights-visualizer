@@ -39,8 +39,8 @@ const Index = () => {
     return {
       time: timestamp.slice(11),
       timestamp,
-      instagram: instaItem ? instaItem.hashtags : 0,
-      wechat: wechatItem ? wechatItem.hashtags : 0,
+      instagram: instaItem ? instaItem.hashtags : null,
+      wechat: wechatItem ? wechatItem.hashtags : null,
     };
   });
 
@@ -52,7 +52,7 @@ const Index = () => {
   const endTimeFormatted = endTime.toTimeString().slice(0, 5);
 
   // Calculate peak engagement from both platforms
-  const allValues = combinedData.flatMap(item => [item.instagram, item.wechat]).filter(val => val > 0);
+  const allValues = combinedData.flatMap(item => [item.instagram, item.wechat]).filter(val => val !== null && val > 0);
   const peakEngagement = Math.max(...allValues);
 
   // Calculate average engagement
@@ -65,9 +65,11 @@ const Index = () => {
         <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-lg">
           <p className="text-gray-300 text-sm">{`Time: ${label}`}</p>
           {payload.map((entry: any, index: number) => (
-            <p key={index} className={`font-semibold ${entry.dataKey === 'instagram' ? 'text-blue-400' : 'text-red-400'}`}>
-              {`${entry.dataKey === 'instagram' ? 'Instagram' : 'WeChat'}: ${entry.value.toLocaleString()}`}
-            </p>
+            entry.value !== null && (
+              <p key={index} className={`font-semibold ${entry.dataKey === 'instagram' ? 'text-blue-400' : 'text-red-400'}`}>
+                {`${entry.dataKey === 'instagram' ? 'Instagram' : 'WeChat'}: ${entry.value.toLocaleString()}`}
+              </p>
+            )
           ))}
         </div>
       );
@@ -145,16 +147,18 @@ const Index = () => {
                   dataKey="instagram" 
                   stroke="#3B82F6" 
                   strokeWidth={2}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 3 }}
-                  activeDot={{ r: 4, fill: '#60A5FA' }}
+                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 2 }}
+                  activeDot={{ r: 3, fill: '#60A5FA' }}
+                  connectNulls={false}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="wechat" 
                   stroke="#EF4444" 
                   strokeWidth={2}
-                  dot={{ fill: '#EF4444', strokeWidth: 2, r: 3 }}
-                  activeDot={{ r: 4, fill: '#F87171' }}
+                  dot={{ fill: '#EF4444', strokeWidth: 2, r: 2 }}
+                  activeDot={{ r: 3, fill: '#F87171' }}
+                  connectNulls={false}
                 />
               </LineChart>
             </ResponsiveContainer>
