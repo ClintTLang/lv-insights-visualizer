@@ -60,6 +60,10 @@ const Index = () => {
   const instaAverage = Math.round(instaValues.reduce((sum, val) => sum + val, 0) / instaValues.length);
   const wechatAverage = Math.round(wechatValues.reduce((sum, val) => sum + val, 0) / wechatValues.length);
 
+  // Find peak times
+  const instaPeakTime = instaData.find(item => item.hashtags === instaPeak)?.time || '';
+  const wechatPeakTime = wechatData.find(item => item.hashtags === wechatPeak)?.time || '';
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -94,14 +98,20 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Peak Engagement</h3>
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-blue-400 text-sm">Instagram</span>
-                <span className="text-xl font-bold text-white">{instaPeak.toLocaleString()}</span>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-white">{instaPeak.toLocaleString()}</span>
+                  <p className="text-xs text-gray-400">at {instaPeakTime}</p>
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-red-400 text-sm">WeChat</span>
-                <span className="text-xl font-bold text-white">{wechatPeak.toLocaleString()}</span>
+                <div className="text-right">
+                  <span className="text-xl font-bold text-white">{wechatPeak.toLocaleString()}</span>
+                  <p className="text-xs text-gray-400">at {wechatPeakTime}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -126,14 +136,28 @@ const Index = () => {
           </div>
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Data Types</h3>
-            <div className="space-y-2 text-xs">
+            <div className="space-y-3 text-xs">
               <div>
-                <span className="text-blue-400 font-medium">LVMH:</span>
-                <p className="text-gray-300">Instagram hashtags for Louis Vuitton, Christian Dior, and Fendi</p>
+                <div className="flex items-center">
+                  <span className="text-blue-400 font-medium">LVMH:</span>
+                  <span className="text-white ml-1">Instagram hashtags</span>
+                </div>
+                <ul className="mt-1 ml-4 text-gray-300">
+                  <li>• Louis Vuitton</li>
+                  <li>• Christian Dior</li>
+                  <li>• Fendi</li>
+                </ul>
               </div>
               <div>
-                <span className="text-red-400 font-medium">Guochao:</span>
-                <p className="text-gray-300">WeChat hashtags for M Essential, Uma Wang, and Samuel Gui Yang</p>
+                <div className="flex items-center">
+                  <span className="text-red-400 font-medium">Guochao:</span>
+                  <span className="text-white ml-1">WeChat hashtags</span>
+                </div>
+                <ul className="mt-1 ml-4 text-gray-300">
+                  <li>• M Essential</li>
+                  <li>• Uma Wang</li>
+                  <li>• Samuel Gui Yang</li>
+                </ul>
               </div>
             </div>
           </div>
