@@ -1,17 +1,28 @@
-
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+// Ignore IDE flags, files will be made at build
+import instadata from '../backend/runfiles/instadata.json';
+import wechatdata from '../backend/runfiles/wechatdata.json';
+
 const Index = () => {
-  // Transform the JSON data into the format needed for the chart
-  const engagementData = [
-    { time: "21:50", timestamp: "2025-06-23T21:50", hashtags: 49 },
-    { time: "22:00", timestamp: "2025-06-23T22:00", hashtags: 253 },
-    { time: "22:10", timestamp: "2025-06-23T22:10", hashtags: 262 },
-    { time: "22:20", timestamp: "2025-06-23T22:20", hashtags: 264 },
-    { time: "22:30", timestamp: "2025-06-23T22:30", hashtags: 254 },
-    { time: "22:40", timestamp: "2025-06-23T22:40", hashtags: 255 }
-  ];
+  // Build instaData from instadata.json
+  const instaData = Object.entries(instadata).map(
+    ([timestamp, count]) => ({
+      time: timestamp.slice(11),
+      timestamp,
+      hashtags: count,
+    })
+  );
+
+  // Build wechatData from wechatdata.json
+  const wechatData = Object.entries(wechatdata).map(
+    ([timestamp, count]) => ({
+      time: timestamp.slice(11),
+      timestamp,
+      hashtags: count,
+    })
+  );
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -33,7 +44,7 @@ const Index = () => {
       <div className="border-b border-gray-700 bg-gray-850">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <h1 className="text-3xl font-bold text-white mb-2">LVMH Engagement Statistics</h1>
-          <p className="text-gray-400">Instagram hashtag tracking for #louisvuitton</p>
+          <p className="text-gray-400">Instagram hashtag tracking for Louis Vuitton, Christian Dior, Fendi, and Givenchy</p>
         </div>
       </div>
 
@@ -53,7 +64,7 @@ const Index = () => {
           </div>
           <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-400 mb-2">Total Period</h3>
-            <p className="text-2xl font-bold text-white">60 min</p>
+            <p className="text-2xl font-bold text-white">24 hrs</p>
             <p className="text-xs text-gray-400 mt-1">21:50 - 22:40</p>
           </div>
         </div>
@@ -62,13 +73,13 @@ const Index = () => {
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-white mb-2">Engagement Timeline</h2>
-            <p className="text-gray-400 text-sm">Instagram hashtag mentions over time</p>
+            <p className="text-gray-400 text-sm">Instagram hashtag mentions over 10-minute intervals</p>
           </div>
           
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={engagementData}
+                data={instaData}
                 margin={{
                   top: 20,
                   right: 30,
@@ -97,8 +108,8 @@ const Index = () => {
                   dataKey="hashtags" 
                   stroke="#3B82F6" 
                   strokeWidth={2}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 5 }}
-                  activeDot={{ r: 7, fill: '#60A5FA' }}
+                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 3 }}
+                  activeDot={{ r: 4, fill: '#60A5FA' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -118,7 +129,7 @@ const Index = () => {
                 </tr>
               </thead>
               <tbody>
-                {engagementData.map((item, index) => (
+                {instaData.map((item, index) => (
                   <tr key={index} className="border-b border-gray-700 hover:bg-gray-750">
                     <td className="py-3 px-4 text-gray-300">{item.timestamp}</td>
                     <td className="py-3 px-4 text-white font-medium">{item.time}</td>

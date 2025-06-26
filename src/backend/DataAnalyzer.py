@@ -6,9 +6,9 @@ import os
 import itertools
 from pathlib import Path
 
-def main():
-    # Path to your dummy data
-    csv_path = os.path.join(os.path.dirname(__file__), 'dummyrunfiles', 'dummy_data.csv')
+def analyzer(input_csv_filename: str, output_json_filename: str):
+    # Build input CSV path
+    csv_path = os.path.join(os.path.dirname(__file__), 'dummyrunfiles', input_csv_filename)
     
     counts = Counter()
     with open(csv_path, newline='') as f:
@@ -25,14 +25,18 @@ def main():
     # To print the full JSON result, uncomment the line below:
     print(json.dumps(dict(counts), indent=2))
 
-    # Save full JSON result to backend/runfiles/instadata.json
+    # Build output JSON path
     runfiles_dir = Path(__file__).parent / "runfiles"
     runfiles_dir.mkdir(exist_ok=True)
-    output_path = runfiles_dir / "instadata.json"
+    output_path = runfiles_dir / output_json_filename
     with open(output_path, "w", encoding="utf-8") as jf:
         json.dump(dict(counts), jf, indent=2)
     print(f"Saved analysis JSON to {output_path}")
 
+def main():
+    # Generate analysis for each dataset
+    analyzer('dummy_data.csv', 'instadata.json')
+    analyzer('china_dummy_data.csv', 'wechatdata.json')
+
 if __name__ == '__main__':
-    result = main()
-    # result is written to instadata.json above
+    main()
