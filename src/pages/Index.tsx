@@ -201,7 +201,7 @@ const Index = () => {
             </div>
             {showDataTypesInfo ? (
               <p className="text-gray-300 text-sm">
-                For each brand, the data gathered includes the three most common variations of its associated hashtag (i.e. Louis Vuitton: “#louisvuitton”, “louisv”, and “lv”).
+                For each brand, the data gathered includes the three most common variations of its associated hashtag (i.e. Louis Vuitton: “#louisvuitton”, “#louisv”, and “#lv”).
               </p>
             ) : (
               <div className="space-y-3 text-xs">
