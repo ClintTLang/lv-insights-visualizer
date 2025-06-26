@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -24,14 +25,27 @@ const Index = () => {
     })
   );
 
+  // Combine data for the chart - merge by timestamp
+  const combinedData = instaData.map((instaItem) => {
+    const wechatItem = wechatData.find(w => w.timestamp === instaItem.timestamp);
+    return {
+      time: instaItem.time,
+      timestamp: instaItem.timestamp,
+      instagram: instaItem.hashtags,
+      wechat: wechatItem ? wechatItem.hashtags : 0,
+    };
+  });
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-lg">
           <p className="text-gray-300 text-sm">{`Time: ${label}`}</p>
-          <p className="text-blue-400 font-semibold">
-            {`Hashtags: ${payload[0].value.toLocaleString()}`}
-          </p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className={`font-semibold ${entry.dataKey === 'instagram' ? 'text-blue-400' : 'text-red-400'}`}>
+              {`${entry.dataKey === 'instagram' ? 'Instagram' : 'WeChat'}: ${entry.value.toLocaleString()}`}
+            </p>
+          ))}
         </div>
       );
     }
@@ -73,13 +87,13 @@ const Index = () => {
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-white mb-2">Engagement Timeline</h2>
-            <p className="text-gray-400 text-sm">Instagram hashtag mentions over 10-minute intervals</p>
+            <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals</p>
           </div>
           
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={instaData}
+                data={combinedData}
                 margin={{
                   top: 20,
                   right: 30,
@@ -105,11 +119,19 @@ const Index = () => {
                 <Tooltip content={<CustomTooltip />} />
                 <Line 
                   type="monotone" 
-                  dataKey="hashtags" 
+                  dataKey="instagram" 
                   stroke="#3B82F6" 
                   strokeWidth={2}
                   dot={{ fill: '#3B82F6', strokeWidth: 2, r: 3 }}
                   activeDot={{ r: 4, fill: '#60A5FA' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="wechat" 
+                  stroke="#EF4444" 
+                  strokeWidth={2}
+                  dot={{ fill: '#EF4444', strokeWidth: 2, r: 3 }}
+                  activeDot={{ r: 4, fill: '#F87171' }}
                 />
               </LineChart>
             </ResponsiveContainer>
