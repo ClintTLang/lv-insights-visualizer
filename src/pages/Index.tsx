@@ -7,7 +7,6 @@ import wechatdata from '../backend/runfiles/wechatdata.json';
 
 const Index = () => {
   const [showDataTypesInfo, setShowDataTypesInfo] = useState(false);
-  
   // Build instaData from instadata.json
   const instaData = Object.entries(instadata).map(
     ([timestamp, count]) => ({
@@ -32,62 +31,16 @@ const Index = () => {
     ...wechatData.map(item => item.timestamp)
   ])].sort();
 
-  // Helper function to calculate derivatives
-  const calculateDerivative = (data: Array<{timestamp: string, value: number | null}>) => {
-    const derivative = [];
-    for (let i = 1; i < data.length; i++) {
-      const prev = data[i - 1];
-      const curr = data[i];
-      
-      if (prev.value !== null && curr.value !== null) {
-        const slope = curr.value - prev.value;
-        derivative.push({ timestamp: curr.timestamp, value: slope });
-      } else {
-        derivative.push({ timestamp: curr.timestamp, value: null });
-      }
-    }
-    return derivative;
-  };
-
-  // Create data arrays for derivative calculations
-  const instaDataForDerivative = allTimestamps.map(timestamp => {
-    const item = instaData.find(item => item.timestamp === timestamp);
-    return { timestamp, value: item ? item.hashtags : null };
-  });
-
-  const wechatDataForDerivative = allTimestamps.map(timestamp => {
-    const item = wechatData.find(item => item.timestamp === timestamp);
-    return { timestamp, value: item ? item.hashtags : null };
-  });
-
-  // Calculate first derivatives
-  const instaFirstDerivative = calculateDerivative(instaDataForDerivative);
-  const wechatFirstDerivative = calculateDerivative(wechatDataForDerivative);
-
-  // Calculate second derivatives
-  const instaSecondDerivative = calculateDerivative(instaFirstDerivative);
-  const wechatSecondDerivative = calculateDerivative(wechatFirstDerivative);
-
   // Create combined data covering the full time range
   const combinedData = allTimestamps.map((timestamp) => {
     const instaItem = instaData.find(item => item.timestamp === timestamp);
     const wechatItem = wechatData.find(item => item.timestamp === timestamp);
-    
-    // Find derivative values
-    const instaFirst = instaFirstDerivative.find(item => item.timestamp === timestamp);
-    const wechatFirst = wechatFirstDerivative.find(item => item.timestamp === timestamp);
-    const instaSecond = instaSecondDerivative.find(item => item.timestamp === timestamp);
-    const wechatSecond = wechatSecondDerivative.find(item => item.timestamp === timestamp);
     
     return {
       time: timestamp.slice(11),
       timestamp,
       instagram: instaItem ? instaItem.hashtags : null,
       wechat: wechatItem ? wechatItem.hashtags : null,
-      instaFirstDerivative: instaFirst ? instaFirst.value : null,
-      wechatFirstDerivative: wechatFirst ? wechatFirst.value : null,
-      instaSecondDerivative: instaSecond ? instaSecond.value : null,
-      wechatSecondDerivative: wechatSecond ? wechatSecond.value : null,
     };
   });
 
@@ -133,22 +86,8 @@ const Index = () => {
           <p className="text-gray-300 text-sm">{`Time: ${label}`}</p>
           {payload.map((entry: any, index: number) => (
             entry.value !== null && (
-              <p key={index} className={`font-semibold ${
-                entry.dataKey === 'instagram' ? 'text-blue-400' : 
-                entry.dataKey === 'wechat' ? 'text-red-400' :
-                entry.dataKey === 'instaFirstDerivative' ? 'text-blue-300' :
-                entry.dataKey === 'wechatFirstDerivative' ? 'text-red-300' :
-                entry.dataKey === 'instaSecondDerivative' ? 'text-blue-200' :
-                'text-red-200'
-              }`}>
-                {`${
-                  entry.dataKey === 'instagram' ? 'Instagram' : 
-                  entry.dataKey === 'wechat' ? 'WeChat' :
-                  entry.dataKey === 'instaFirstDerivative' ? 'Instagram 1st Derivative' :
-                  entry.dataKey === 'wechatFirstDerivative' ? 'WeChat 1st Derivative' :
-                  entry.dataKey === 'instaSecondDerivative' ? 'Instagram 2nd Derivative' :
-                  'WeChat 2nd Derivative'
-                }: ${entry.value.toLocaleString()}`}
+              <p key={index} className={`font-semibold ${entry.dataKey === 'instagram' ? 'text-blue-400' : 'text-red-400'}`}>
+                {`${entry.dataKey === 'instagram' ? 'Instagram' : 'WeChat'}: ${entry.value.toLocaleString()}`}
               </p>
             )
           ))}
@@ -177,8 +116,8 @@ const Index = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-blue-400 font-bold text-lg">LVMH</span>
-                  <span className="text-white ml-1">Instagram hashtags</span><br/>
+                  <span className="text-blue-400 font-bold text-lg">LVMH</span><br/>
+                  <span className="text-sm text-blue-400 ml-2">on Instagram</span>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-bold text-white">{instaPeak.toLocaleString()}</span>
@@ -187,8 +126,8 @@ const Index = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-red-400 font-bold text-lg">Guochao</span>
-                  <span className="text-white ml-1">WeChat hashtags</span><br/>
+                  <span className="text-red-400 font-bold text-lg">Guochao</span><br/>
+                  <span className="text-sm text-red-400 ml-2">on WeChat</span>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-bold text-white">{wechatPeak.toLocaleString()}</span>
@@ -202,15 +141,15 @@ const Index = () => {
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-blue-400 font-bold text-lg">LVMH</span>
-                  <span className="text-white ml-1">Instagram hashtags</span><br/>
+                  <span className="text-blue-400 font-bold text-lg">LVMH</span><br/>
+                  <span className="text-sm text-blue-400 ml-2">on Instagram</span>
                 </div>
                 <span className="text-2xl font-bold text-white">{instaAverage.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-red-400 font-bold text-lg">Guochao</span>
-                  <span className="text-white ml-1">WeChat hashtags</span><br/>
+                  <span className="text-red-400 font-bold text-lg">Guochao</span><br/>
+                  <span className="text-sm text-red-400 ml-2">on WeChat</span>
                 </div>
                 <span className="text-2xl font-bold text-white">{wechatAverage.toLocaleString()}</span>
               </div>
@@ -262,7 +201,7 @@ const Index = () => {
             </div>
             {showDataTypesInfo ? (
               <p className="text-gray-300 text-sm">
-                For each brand, the data gathered includes the three most common variations of its associated hashtag (i.e. Louis Vuitton: "#louisvuitton", "#louisv", and "#lv").
+                For each brand, the data gathered includes the three most common variations of its associated hashtag (i.e. Louis Vuitton: “#louisvuitton”, “#louisv”, and “#lv”).
               </p>
             ) : (
               <div className="space-y-3 text-xs">
@@ -297,7 +236,7 @@ const Index = () => {
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-white mb-2">Engagement Timeline</h2>
-            <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions with derivatives over 10-minute intervals</p>
+            <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals</p>
           </div>
           
           <div className="h-96">
@@ -327,7 +266,6 @@ const Index = () => {
                   tickFormatter={(value) => value.toLocaleString()}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                {/* Original data lines */}
                 <Line 
                   type="monotone" 
                   dataKey="instagram" 
@@ -344,48 +282,6 @@ const Index = () => {
                   strokeWidth={2}
                   dot={{ fill: '#EF4444', strokeWidth: 2, r: 1 }}
                   activeDot={{ r: 3, fill: '#F87171' }}
-                  connectNulls={false}
-                />
-                {/* First derivative lines */}
-                <Line 
-                  type="monotone" 
-                  dataKey="instaFirstDerivative" 
-                  stroke="#93C5FD" 
-                  strokeWidth={1.5}
-                  strokeDasharray="5 5"
-                  dot={{ fill: '#93C5FD', strokeWidth: 1, r: 0.5 }}
-                  activeDot={{ r: 2, fill: '#93C5FD' }}
-                  connectNulls={false}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="wechatFirstDerivative" 
-                  stroke="#FCA5A5" 
-                  strokeWidth={1.5}
-                  strokeDasharray="5 5"
-                  dot={{ fill: '#FCA5A5', strokeWidth: 1, r: 0.5 }}
-                  activeDot={{ r: 2, fill: '#FCA5A5' }}
-                  connectNulls={false}
-                />
-                {/* Second derivative lines */}
-                <Line 
-                  type="monotone" 
-                  dataKey="instaSecondDerivative" 
-                  stroke="#DBEAFE" 
-                  strokeWidth={1}
-                  strokeDasharray="2 2"
-                  dot={{ fill: '#DBEAFE', strokeWidth: 1, r: 0.3 }}
-                  activeDot={{ r: 1.5, fill: '#DBEAFE' }}
-                  connectNulls={false}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="wechatSecondDerivative" 
-                  stroke="#FEE2E2" 
-                  strokeWidth={1}
-                  strokeDasharray="2 2"
-                  dot={{ fill: '#FEE2E2', strokeWidth: 1, r: 0.3 }}
-                  activeDot={{ r: 1.5, fill: '#FEE2E2' }}
                   connectNulls={false}
                 />
               </LineChart>
