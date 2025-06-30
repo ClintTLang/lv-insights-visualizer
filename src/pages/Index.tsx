@@ -31,6 +31,32 @@ const Index = () => {
     ...wechatData.map(item => item.timestamp)
   ])].sort();
 
+  // Helper function to calculate derivatives
+  const calculateDerivatives = (data: number[]) => {
+    const firstDerivative = [];
+    const secondDerivative = [];
+    
+    // Calculate first derivative (rate of change)
+    for (let i = 0; i < data.length; i++) {
+      if (i === 0) {
+        firstDerivative.push(0);
+      } else {
+        firstDerivative.push(data[i] - data[i - 1]);
+      }
+    }
+    
+    // Calculate second derivative (acceleration)
+    for (let i = 0; i < firstDerivative.length; i++) {
+      if (i === 0) {
+        secondDerivative.push(0);
+      } else {
+        secondDerivative.push(firstDerivative[i] - firstDerivative[i - 1]);
+      }
+    }
+    
+    return { firstDerivative, secondDerivative };
+  };
+
   // Create combined data covering the full time range
   const combinedData = allTimestamps.map((timestamp) => {
     const instaItem = instaData.find(item => item.timestamp === timestamp);
@@ -43,6 +69,22 @@ const Index = () => {
       wechat: wechatItem ? wechatItem.hashtags : null,
     };
   });
+
+  // Calculate derivatives for both datasets
+  const instaValues = combinedData.map(item => item.instagram || 0);
+  const wechatValues = combinedData.map(item => item.wechat || 0);
+  
+  const instaDerivatives = calculateDerivatives(instaValues);
+  const wechatDerivatives = calculateDerivatives(wechatValues);
+
+  // Add derivatives to combined data
+  const combinedDataWithDerivatives = combinedData.map((item, index) => ({
+    ...item,
+    instagramD1: instaDerivatives.firstDerivative[index],
+    instagramD2: instaDerivatives.secondDerivative[index],
+    wechatD1: wechatDerivatives.firstDerivative[index],
+    wechatD2: wechatDerivatives.secondDerivative[index],
+  }));
 
   // Calculate total period
   const startTime = new Date(allTimestamps[0]);
@@ -67,13 +109,13 @@ const Index = () => {
   const endTimeOnly   = endTime.toLocaleTimeString('en-US',   { hour: 'numeric', minute: '2-digit', hour12: true });
 
   // Calculate separate stats for each platform
-  const instaValues = instaData.map(item => item.hashtags).filter(val => val > 0);
-  const wechatValues = wechatData.map(item => item.hashtags).filter(val => val > 0);
+  const instaValuesFiltered = instaData.map(item => item.hashtags).filter(val => val > 0);
+  const wechatValuesFiltered = wechatData.map(item => item.hashtags).filter(val => val > 0);
   
-  const instaPeak = Math.max(...instaValues);
-  const wechatPeak = Math.max(...wechatValues);
-  const instaAverage = Math.round(instaValues.reduce((sum, val) => sum + val, 0) / instaValues.length);
-  const wechatAverage = Math.round(wechatValues.reduce((sum, val) => sum + val, 0) / wechatValues.length);
+  const instaPeak = Math.max(...instaValuesFiltered);
+  const wechatPeak = Math.max(...wechatValuesFiltered);
+  const instaAverage = Math.round(instaValuesFiltered.reduce((sum, val) => sum + val, 0) / instaValuesFiltered.length);
+  const wechatAverage = Math.round(wechatValuesFiltered.reduce((sum, val) => sum + val, 0) / wechatValuesFiltered.length);
 
   // Find peak times
   const instaPeakTime = instaData.find(item => item.hashtags === instaPeak)?.time || '';
@@ -86,8 +128,19 @@ const Index = () => {
           <p className="text-gray-300 text-sm">{`Time: ${label}`}</p>
           {payload.map((entry: any, index: number) => (
             entry.value !== null && (
-              <p key={index} className={`font-semibold ${entry.dataKey === 'instagram' ? 'text-blue-400' : 'text-red-400'}`}>
-                {`${entry.dataKey === 'instagram' ? 'Instagram' : 'WeChat'}: ${entry.value.toLocaleString()}`}
+              <p key={index} className={`font-semibold ${
+                entry.dataKey.includes('instagram') 
+                  ? entry.dataKey.includes('D') ? 'text-blue-300' : 'text-blue-400'
+                  : entry.dataKey.includes('D') ? 'text-red-300' : 'text-red-400'
+              }`}>
+                {`${
+                  entry.dataKey === 'instagram' ? 'Instagram' :
+                  entry.dataKey === 'wechat' ? 'WeChat' :
+                  entry.dataKey === 'instagramD1' ? 'Instagram 1st Derivative' :
+                  entry.dataKey === 'instagramD2' ? 'Instagram 2nd Derivative' :
+                  entry.dataKey === 'wechatD1' ? 'WeChat 1st Derivative' :
+                  'WeChat 2nd Derivative'
+                }: ${entry.value.toLocaleString()}`}
               </p>
             )
           ))}
@@ -201,7 +254,7 @@ const Index = () => {
             </div>
             {showDataTypesInfo ? (
               <p className="text-gray-300 text-sm">
-                For each brand, the data gathered includes the three most common variations of its associated hashtag (i.e. Louis Vuitton: “#louisvuitton”, “#louisv”, and “#lv”).
+                For each brand, the data gathered includes the three most common variations of its associated hashtag (i.e. Louis Vuitton: "#louisvuitton", "#louisv", and "#lv").
               </p>
             ) : (
               <div className="space-y-3 text-xs">
@@ -236,13 +289,13 @@ const Index = () => {
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-white mb-2">Engagement Timeline</h2>
-            <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals</p>
+            <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals with derivatives</p>
           </div>
           
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={combinedData}
+                data={combinedDataWithDerivatives}
                 margin={{
                   top: 20,
                   right: 30,
@@ -282,6 +335,46 @@ const Index = () => {
                   strokeWidth={2}
                   dot={{ fill: '#EF4444', strokeWidth: 2, r: 1 }}
                   activeDot={{ r: 3, fill: '#F87171' }}
+                  connectNulls={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="instagramD1" 
+                  stroke="#60A5FA" 
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  activeDot={{ r: 2, fill: '#60A5FA' }}
+                  connectNulls={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="instagramD2" 
+                  stroke="#93C5FD" 
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  dot={false}
+                  activeDot={{ r: 2, fill: '#93C5FD' }}
+                  connectNulls={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="wechatD1" 
+                  stroke="#F87171" 
+                  strokeWidth={1}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  activeDot={{ r: 2, fill: '#F87171' }}
+                  connectNulls={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="wechatD2" 
+                  stroke="#FCA5A5" 
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                  dot={false}
+                  activeDot={{ r: 2, fill: '#FCA5A5' }}
                   connectNulls={false}
                 />
               </LineChart>
