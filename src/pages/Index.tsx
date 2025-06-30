@@ -31,26 +31,26 @@ const Index = () => {
     ...wechatData.map(item => item.timestamp)
   ])].sort();
 
-  // Helper function to calculate derivatives
-  const calculateDerivatives = (data: number[]) => {
+  // Helper function to calculate derivatives only for valid data points
+  const calculateDerivatives = (data: (number | null)[]) => {
     const firstDerivative = [];
     const secondDerivative = [];
     
     // Calculate first derivative (rate of change)
     for (let i = 0; i < data.length; i++) {
-      if (i === 0) {
-        firstDerivative.push(0);
+      if (i === 0 || data[i] === null || data[i - 1] === null) {
+        firstDerivative.push(null);
       } else {
-        firstDerivative.push(data[i] - data[i - 1]);
+        firstDerivative.push((data[i] as number) - (data[i - 1] as number));
       }
     }
     
     // Calculate second derivative (acceleration)
     for (let i = 0; i < firstDerivative.length; i++) {
-      if (i === 0) {
-        secondDerivative.push(0);
+      if (i === 0 || firstDerivative[i] === null || firstDerivative[i - 1] === null) {
+        secondDerivative.push(null);
       } else {
-        secondDerivative.push(firstDerivative[i] - firstDerivative[i - 1]);
+        secondDerivative.push((firstDerivative[i] as number) - (firstDerivative[i - 1] as number));
       }
     }
     
@@ -71,8 +71,8 @@ const Index = () => {
   });
 
   // Calculate derivatives for both datasets
-  const instaValues = combinedData.map(item => item.instagram || 0);
-  const wechatValues = combinedData.map(item => item.wechat || 0);
+  const instaValues = combinedData.map(item => item.instagram);
+  const wechatValues = combinedData.map(item => item.wechat);
   
   const instaDerivatives = calculateDerivatives(instaValues);
   const wechatDerivatives = calculateDerivatives(wechatValues);
