@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -45,6 +46,56 @@ const Index = () => {
     };
   });
 
+  // Calculate derivatives for chart data
+  const chartData = combinedData.map((item, index) => {
+    let instagramFirstDerivative = null;
+    let wechatFirstDerivative = null;
+    let instagramSecondDerivative = null;
+    let wechatSecondDerivative = null;
+
+    if (index > 0 && item.instagram !== null) {
+      const prevInstagram = combinedData[index - 1].instagram;
+      if (prevInstagram !== null) {
+        instagramFirstDerivative = item.instagram - prevInstagram;
+      }
+    }
+
+    if (index > 0 && item.wechat !== null) {
+      const prevWechat = combinedData[index - 1].wechat;
+      if (prevWechat !== null) {
+        wechatFirstDerivative = item.wechat - prevWechat;
+      }
+    }
+
+    if (index > 1 && item.instagram !== null) {
+      const prevInstagram = combinedData[index - 1].instagram;
+      const prevPrevInstagram = combinedData[index - 2].instagram;
+      if (prevInstagram !== null && prevPrevInstagram !== null) {
+        const currentFirstDeriv = item.instagram - prevInstagram;
+        const prevFirstDeriv = prevInstagram - prevPrevInstagram;
+        instagramSecondDerivative = currentFirstDeriv - prevFirstDeriv;
+      }
+    }
+
+    if (index > 1 && item.wechat !== null) {
+      const prevWechat = combinedData[index - 1].wechat;
+      const prevPrevWechat = combinedData[index - 2].wechat;
+      if (prevWechat !== null && prevPrevWechat !== null) {
+        const currentFirstDeriv = item.wechat - prevWechat;
+        const prevFirstDeriv = prevWechat - prevPrevWechat;
+        wechatSecondDerivative = currentFirstDeriv - prevFirstDeriv;
+      }
+    }
+
+    return {
+      ...item,
+      instagramFirstDerivative,
+      wechatFirstDerivative,
+      instagramSecondDerivative,
+      wechatSecondDerivative,
+    };
+  });
+
   // Calculate total period
   const startTime = new Date(allTimestamps[0]);
   const endTime = new Date(allTimestamps[allTimestamps.length - 1]);
@@ -85,13 +136,39 @@ const Index = () => {
       return (
         <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-lg">
           <p className="text-gray-300 text-sm">{`Time: ${label}`}</p>
-          {payload.map((entry: any, index: number) => (
-            entry.value !== null && (
-              <p key={index} className={`font-semibold ${entry.dataKey === 'instagram' ? 'text-blue-400' : 'text-red-400'}`}>
-                {`${entry.dataKey === 'instagram' ? 'Instagram' : 'WeChat'}: ${entry.value.toLocaleString()}`}
-              </p>
-            )
-          ))}
+          {payload.map((entry: any, index: number) => {
+            if (entry.value !== null) {
+              let label = '';
+              let color = '';
+              
+              if (entry.dataKey === 'instagram') {
+                label = 'Instagram';
+                color = 'text-blue-400';
+              } else if (entry.dataKey === 'wechat') {
+                label = 'WeChat';
+                color = 'text-red-400';
+              } else if (entry.dataKey === 'instagramFirstDerivative') {
+                label = 'Instagram 1st Derivative';
+                color = 'text-blue-300';
+              } else if (entry.dataKey === 'wechatFirstDerivative') {
+                label = 'WeChat 1st Derivative';
+                color = 'text-red-300';
+              } else if (entry.dataKey === 'instagramSecondDerivative') {
+                label = 'Instagram 2nd Derivative';
+                color = 'text-blue-200';
+              } else if (entry.dataKey === 'wechatSecondDerivative') {
+                label = 'WeChat 2nd Derivative';
+                color = 'text-red-200';
+              }
+
+              return (
+                <p key={index} className={`font-semibold ${color}`}>
+                  {`${label}: ${entry.value.toLocaleString()}`}
+                </p>
+              );
+            }
+            return null;
+          })}
         </div>
       );
     }
@@ -237,13 +314,13 @@ const Index = () => {
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-white mb-2">Engagement Timeline</h2>
-            <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals</p>
+            <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals with derivatives</p>
           </div>
           
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={combinedData}
+                data={chartData}
                 margin={{
                   top: 20,
                   right: 30,
@@ -284,6 +361,46 @@ const Index = () => {
                   dot={{ fill: '#EF4444', strokeWidth: 2, r: 1 }}
                   activeDot={{ r: 3, fill: '#F87171' }}
                   connectNulls={true}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="instagramFirstDerivative" 
+                  stroke="#60A5FA" 
+                  strokeWidth={1.5}
+                  strokeDasharray="5 5"
+                  dot={{ fill: '#60A5FA', strokeWidth: 1, r: 0.5 }}
+                  activeDot={{ r: 2, fill: '#93C5FD' }}
+                  connectNulls={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="wechatFirstDerivative" 
+                  stroke="#F87171" 
+                  strokeWidth={1.5}
+                  strokeDasharray="5 5"
+                  dot={{ fill: '#F87171', strokeWidth: 1, r: 0.5 }}
+                  activeDot={{ r: 2, fill: '#FCA5A5' }}
+                  connectNulls={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="instagramSecondDerivative" 
+                  stroke="#93C5FD" 
+                  strokeWidth={1}
+                  strokeDasharray="2 2"
+                  dot={{ fill: '#93C5FD', strokeWidth: 1, r: 0.3 }}
+                  activeDot={{ r: 1.5, fill: '#DBEAFE' }}
+                  connectNulls={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="wechatSecondDerivative" 
+                  stroke="#FCA5A5" 
+                  strokeWidth={1}
+                  strokeDasharray="2 2"
+                  dot={{ fill: '#FCA5A5', strokeWidth: 1, r: 0.3 }}
+                  activeDot={{ r: 1.5, fill: '#FEE2E2' }}
+                  connectNulls={false}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -326,3 +443,4 @@ const Index = () => {
 };
 
 export default Index;
+
