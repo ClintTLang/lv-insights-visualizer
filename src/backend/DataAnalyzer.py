@@ -36,8 +36,7 @@ def analyze(input_folder: str, input_csv_filename: str, output_folder: str, outp
     print(f"Saved analysis JSON to {output_path}")
 
 def main():
-    # Generate analysis for each dataset
-    analyze('dummyrunfiles', 'dummy_data.csv', 'dummyinput', 'dummyinstadata.json')
+    # Generate analysis for China dataset
     analyze('dummyrunfiles', 'china_dummy_data.csv', 'dummyinput', 'dummywechatdata.json')
 
 if __name__ == '__main__':

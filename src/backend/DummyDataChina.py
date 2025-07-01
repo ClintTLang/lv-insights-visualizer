@@ -18,7 +18,7 @@ def generate_dummy_csv(output_path="src/backend/dummyrunfiles/china_dummy_data.c
         # For each minute in the last 24h
         for minute_offset in tqdm(reversed(range(24 * 60)), desc="Generating dummy data", unit="min"):
             minute_time = start + timedelta(minutes=minute_offset)
-            count = random.randint(13, 27)
+            count = random.randint(2, 5)
             for sec in reversed(range(count)):
                 ts = minute_time + timedelta(seconds=sec)
                 ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S.000Z")
