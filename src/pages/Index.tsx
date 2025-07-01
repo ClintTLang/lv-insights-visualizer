@@ -1,7 +1,13 @@
-
 import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ComposedChart } from 'recharts';
 import { Switch } from "@/components/ui/switch";
+import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Ignore IDE flags, files will be made at build
 import instadata from '../backend/input/instadata.json';
@@ -320,23 +326,25 @@ const Index = () => {
               <h2 className="text-xl font-semibold text-white mb-2">Engagement Timeline</h2>
               <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals with derivatives</p>
             </div>
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-white">Line Chart</span>
-                <Switch
-                  checked={useBarChart}
-                  onCheckedChange={setUseBarChart}
-                />
-                <span className="text-sm text-white">Bar Chart</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-white">First Derivative</span>
-                <Switch
-                  checked={showSecondDerivative}
-                  onCheckedChange={setShowSecondDerivative}
-                />
-                <span className="text-sm text-white">Second Derivative</span>
-              </div>
+            <div className="flex items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg border border-gray-600 transition-colors">
+                  Modes
+                  <ChevronDown className="h-4 w-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-gray-800 border-gray-600 z-50">
+                  <DropdownMenuItem className="text-white hover:bg-gray-700 focus:bg-gray-700 cursor-pointer" onClick={() => setUseBarChart(!useBarChart)}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm">{useBarChart ? "Switch to Line Chart" : "Switch to Bar Chart"}</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-white hover:bg-gray-700 focus:bg-gray-700 cursor-pointer" onClick={() => setShowSecondDerivative(!showSecondDerivative)}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm">{showSecondDerivative ? "Show First Derivative" : "Show Second Derivative"}</span>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           
