@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ComposedChart } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ComposedChart, ReferenceLine } from 'recharts';
 import { Switch } from "@/components/ui/switch";
 import { ChevronDown } from "lucide-react";
 import {
@@ -15,8 +15,11 @@ import wechatdata from '../backend/dummyinput/dummywechatdata.json';
 
 const Index = () => {
   const [showDataTypesInfo, setShowDataTypesInfo] = useState(false);
-  const [useBarChart, setUseBarChart] = useState(false);
-  const [showSecondDerivative, setShowSecondDerivative] = useState(false);
+  const [useBarChart, setUseBarChart] = useState(true);
+  const [showSecondDerivative, setShowSecondDerivative] = useState(true);
+
+  // Show legend for green/yellow dots
+  const [showLegendInfo, setShowLegendInfo] = useState(false);
 
   // Build instaData from instadata.json
   const instaData = Object.entries(instadata).map(
@@ -104,6 +107,24 @@ const Index = () => {
       wechatSecondDerivative,
     };
   });
+
+  // Compute inflection point times where second derivatives equal zero
+  const instagramInflectionTimes = chartData
+    .filter(item => item.instagramSecondDerivative === 0)
+    .map(item => item.time);
+
+  const wechatInflectionTimes = chartData
+    .filter(item => item.wechatSecondDerivative === 0)
+    .map(item => item.time);
+
+  // Compute stationary point times where first derivatives equal zero
+  const instagramStationaryTimes = chartData
+    .filter(item => item.instagramFirstDerivative === 0)
+    .map(item => item.time);
+
+  const wechatStationaryTimes = chartData
+    .filter(item => item.wechatFirstDerivative === 0)
+    .map(item => item.time);
 
   // Calculate total period
   const startTime = new Date(allTimestamps[0]);
@@ -324,11 +345,34 @@ const Index = () => {
           <div className="mb-6 flex justify-between items-start">
             <div>
               <h2 className="text-xl font-semibold text-white mb-2">Engagement Timeline</h2>
-              <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals with derivatives</p>
+              <p className="text-gray-400 text-sm">LVMH and Guochao hashtag mentions over 10-minute intervals with derivatives</p>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center relative">
+              <span
+                className="mr-2 cursor-pointer text-gray-400"
+                onMouseEnter={() => setShowLegendInfo(true)}
+                onMouseLeave={() => setShowLegendInfo(false)}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" stroke="currentColor" />
+                  <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" stroke="currentColor" />
+                  <circle cx="12" cy="16" r="1" fill="currentColor" />
+                </svg>
+                {showLegendInfo && (
+                  <div className="absolute top-full left-0 mt-2 bg-gray-800 border border-gray-600 rounded-lg p-2 text-xs text-gray-300 z-10">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block w-2 h-2 bg-[#39FF14] rounded-full"></span>
+                      Inflection Point
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="inline-block w-2 h-2 bg-[#FFFF00] rounded-full"></span>
+                      Stationary Point
+                    </div>
+                  </div>
+                )}
+              </span>
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg border border-gray-600 transition-colors">
+                <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 mr-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg border border-gray-600 transition-colors">
                   Modes
                   <ChevronDown className="h-4 w-4" />
                 </DropdownMenuTrigger>
@@ -343,6 +387,30 @@ const Index = () => {
                       <span className="text-sm">{showSecondDerivative ? "Show First Derivative" : "Show Second Derivative"}</span>
                     </div>
                   </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg border border-gray-600 transition-colors">
+                  {showSecondDerivative ? 'Inflection Points' : 'Stationary Points'}
+                  <ChevronDown className="h-4 w-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-gray-800 border-gray-600 z-50">
+                  <DropdownMenuItem className="text-white font-semibold cursor-default">
+                    {showSecondDerivative ? 'LVMH' : 'LVMH'}
+                  </DropdownMenuItem>
+                  {(showSecondDerivative ? instagramInflectionTimes : instagramStationaryTimes).map(time => (
+                    <DropdownMenuItem key={time} className="text-gray-300 hover:bg-gray-700">
+                      {time}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuItem className="text-white font-semibold mt-2 cursor-default">
+                    {showSecondDerivative ? 'Guochao' : 'Guochao'}
+                  </DropdownMenuItem>
+                  {(showSecondDerivative ? wechatInflectionTimes : wechatStationaryTimes).map(time => (
+                    <DropdownMenuItem key={time} className="text-gray-300 hover:bg-gray-700">
+                      {time}
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -394,7 +462,13 @@ const Index = () => {
                         stroke="#93C5FD" 
                         strokeWidth={1}
                         strokeDasharray="2 2"
-                        dot={{ fill: '#93C5FD', strokeWidth: 1, r: 0.3 }}
+                        dot={(dotProps) => {
+                          const { cx, cy, value } = dotProps;
+                          // render neon green at zero crossings
+                          return value === 0 
+                            ? <circle cx={cx} cy={cy} r={3} fill="#39FF14" /> 
+                            : null;
+                        }}
                         activeDot={{ r: 1.5, fill: '#DBEAFE' }}
                         connectNulls={false}
                       />
@@ -404,7 +478,13 @@ const Index = () => {
                         stroke="#FCA5A5" 
                         strokeWidth={1}
                         strokeDasharray="2 2"
-                        dot={{ fill: '#FCA5A5', strokeWidth: 1, r: 0.3 }}
+                        dot={(dotProps) => {
+                          const { cx, cy, value } = dotProps;
+                          // render neon green at zero crossings
+                          return value === 0 
+                            ? <circle cx={cx} cy={cy} r={3} fill="#39FF14" /> 
+                            : null;
+                        }}
                         activeDot={{ r: 1.5, fill: '#FEE2E2' }}
                         connectNulls={false}
                       />
@@ -417,7 +497,12 @@ const Index = () => {
                         stroke="#60A5FA" 
                         strokeWidth={1.5}
                         strokeDasharray="5 5"
-                        dot={{ fill: '#60A5FA', strokeWidth: 1, r: 0.5 }}
+                        dot={(dotProps) => {
+                          const { cx, cy, value } = dotProps;
+                          return value === 0
+                            ? <circle cx={cx} cy={cy} r={3} fill="#FFFF00" />
+                            : null;
+                        }}
                         activeDot={{ r: 2, fill: '#93C5FD' }}
                         connectNulls={false}
                       />
@@ -427,7 +512,12 @@ const Index = () => {
                         stroke="#F87171" 
                         strokeWidth={1.5}
                         strokeDasharray="5 5"
-                        dot={{ fill: '#F87171', strokeWidth: 1, r: 0.5 }}
+                        dot={(dotProps) => {
+                          const { cx, cy, value } = dotProps;
+                          return value === 0
+                            ? <circle cx={cx} cy={cy} r={3} fill="#FFFF00" />
+                            : null;
+                        }}
                         activeDot={{ r: 2, fill: '#FCA5A5' }}
                         connectNulls={false}
                       />
@@ -486,7 +576,13 @@ const Index = () => {
                         stroke="#93C5FD" 
                         strokeWidth={1}
                         strokeDasharray="2 2"
-                        dot={{ fill: '#93C5FD', strokeWidth: 1, r: 0.3 }}
+                        dot={(dotProps) => {
+                          const { cx, cy, value } = dotProps;
+                          // render neon green at zero crossings
+                          return value === 0 
+                            ? <circle cx={cx} cy={cy} r={3} fill="#39FF14" /> 
+                            : null;
+                        }}
                         activeDot={{ r: 1.5, fill: '#DBEAFE' }}
                         connectNulls={false}
                       />
@@ -496,7 +592,13 @@ const Index = () => {
                         stroke="#FCA5A5" 
                         strokeWidth={1}
                         strokeDasharray="2 2"
-                        dot={{ fill: '#FCA5A5', strokeWidth: 1, r: 0.3 }}
+                        dot={(dotProps) => {
+                          const { cx, cy, value } = dotProps;
+                          // render neon green at zero crossings
+                          return value === 0 
+                            ? <circle cx={cx} cy={cy} r={3} fill="#39FF14" /> 
+                            : null;
+                        }}
                         activeDot={{ r: 1.5, fill: '#FEE2E2' }}
                         connectNulls={false}
                       />
@@ -509,7 +611,12 @@ const Index = () => {
                         stroke="#60A5FA" 
                         strokeWidth={1.5}
                         strokeDasharray="5 5"
-                        dot={{ fill: '#60A5FA', strokeWidth: 1, r: 0.5 }}
+                        dot={(dotProps) => {
+                          const { cx, cy, value } = dotProps;
+                          return value === 0
+                            ? <circle cx={cx} cy={cy} r={3} fill="#FFFF00" />
+                            : null;
+                        }}
                         activeDot={{ r: 2, fill: '#93C5FD' }}
                         connectNulls={false}
                       />
@@ -519,7 +626,12 @@ const Index = () => {
                         stroke="#F87171" 
                         strokeWidth={1.5}
                         strokeDasharray="5 5"
-                        dot={{ fill: '#F87171', strokeWidth: 1, r: 0.5 }}
+                        dot={(dotProps) => {
+                          const { cx, cy, value } = dotProps;
+                          return value === 0
+                            ? <circle cx={cx} cy={cy} r={3} fill="#FFFF00" />
+                            : null;
+                        }}
                         activeDot={{ r: 2, fill: '#FCA5A5' }}
                         connectNulls={false}
                       />
