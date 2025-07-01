@@ -18,6 +18,9 @@ const Index = () => {
   const [useBarChart, setUseBarChart] = useState(true);
   const [showSecondDerivative, setShowSecondDerivative] = useState(true);
 
+  // Toggle for blocky (few wide bars) data
+  const [showBlocky, setShowBlocky] = useState(false);
+
   // Show legend for green/yellow dots
   const [showLegendInfo, setShowLegendInfo] = useState(false);
 
@@ -108,6 +111,18 @@ const Index = () => {
     };
   });
 
+  // Generate blocky data: group into 10 buckets
+  const blockyData = (() => {
+    const buckets = 10;
+    const size = Math.ceil(chartData.length / buckets);
+    return Array.from({ length: buckets }, (_, i) => {
+      const slice = chartData.slice(i * size, (i + 1) * size);
+      const avgInstagram = slice.reduce((sum, d) => sum + (d.instagram ?? 0), 0) / slice.length;
+      const avgWechat    = slice.reduce((sum, d) => sum + (d.wechat    ?? 0), 0) / slice.length;
+      return { time: slice[0]?.time || '', instagram: avgInstagram, wechat: avgWechat };
+    });
+  })();
+
   // Compute inflection point times where second derivatives equal zero
   const instagramInflectionTimes = chartData
     .filter(item => item.instagramSecondDerivative === 0)
@@ -125,6 +140,9 @@ const Index = () => {
   const wechatStationaryTimes = chartData
     .filter(item => item.wechatFirstDerivative === 0)
     .map(item => item.time);
+
+  // Choose between real and blocky data
+  const displayData = showBlocky ? blockyData : chartData;
 
   // Calculate total period
   const startTime = new Date(allTimestamps[0]);
@@ -387,6 +405,14 @@ const Index = () => {
                       <span className="text-sm">{showSecondDerivative ? "Show First Derivative" : "Show Second Derivative"}</span>
                     </div>
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-white hover:bg-gray-700 focus:bg-gray-700 cursor-pointer"
+                    onClick={() => setShowBlocky(!showBlocky)}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm">{showBlocky ? "Switch to Regular Mode" : "Switch to Block Mode"}</span>
+                    </div>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <DropdownMenu>
@@ -420,7 +446,7 @@ const Index = () => {
             <ResponsiveContainer width="100%" height="100%">
               {useBarChart ? (
                 <ComposedChart
-                  data={chartData}
+                  data={displayData}
                   margin={{
                     top: 20,
                     right: 30,
@@ -526,7 +552,7 @@ const Index = () => {
                 </ComposedChart>
               ) : (
                 <LineChart
-                  data={chartData}
+                  data={displayData}
                   margin={{
                     top: 20,
                     right: 30,
