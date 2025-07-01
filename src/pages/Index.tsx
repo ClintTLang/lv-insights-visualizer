@@ -1,7 +1,6 @@
-
-
 import React, { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { Switch } from "@/components/ui/switch";
 
 // Ignore IDE flags, files will be made at build
 import instadata from '../backend/input/instadata.json';
@@ -9,6 +8,9 @@ import wechatdata from '../backend/dummyinput/dummywechatdata.json';
 
 const Index = () => {
   const [showDataTypesInfo, setShowDataTypesInfo] = useState(false);
+  const [useBarChart, setUseBarChart] = useState(false);
+  const [showSecondDerivative, setShowSecondDerivative] = useState(false);
+
   // Build instaData from instadata.json
   const instaData = Object.entries(instadata).map(
     ([timestamp, count]) => ({
@@ -312,97 +314,210 @@ const Index = () => {
 
         {/* Chart */}
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white mb-2">Engagement Timeline</h2>
-            <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals with derivatives</p>
+          <div className="mb-6 flex justify-between items-start">
+            <div>
+              <h2 className="text-xl font-semibold text-white mb-2">Engagement Timeline</h2>
+              <p className="text-gray-400 text-sm">Instagram and WeChat hashtag mentions over 10-minute intervals with derivatives</p>
+            </div>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-white">Line Chart</span>
+                <Switch
+                  checked={useBarChart}
+                  onCheckedChange={setUseBarChart}
+                />
+                <span className="text-sm text-white">Bar Chart</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-white">First Derivative</span>
+                <Switch
+                  checked={showSecondDerivative}
+                  onCheckedChange={setShowSecondDerivative}
+                />
+                <span className="text-sm text-white">Second Derivative</span>
+              </div>
+            </div>
           </div>
           
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={chartData}
-                margin={{
-                  top: 20,
-                  right: 30,
-                  left: 20,
-                  bottom: 20,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="time" 
-                  stroke="#9CA3AF"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis 
-                  stroke="#9CA3AF"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="instagram" 
-                  stroke="#3B82F6" 
-                  strokeWidth={2}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 1 }}
-                  activeDot={{ r: 3, fill: '#60A5FA' }}
-                  connectNulls={true}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="wechat" 
-                  stroke="#EF4444" 
-                  strokeWidth={2}
-                  dot={{ fill: '#EF4444', strokeWidth: 2, r: 1 }}
-                  activeDot={{ r: 3, fill: '#F87171' }}
-                  connectNulls={true}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="instagramFirstDerivative" 
-                  stroke="#60A5FA" 
-                  strokeWidth={1.5}
-                  strokeDasharray="5 5"
-                  dot={{ fill: '#60A5FA', strokeWidth: 1, r: 0.5 }}
-                  activeDot={{ r: 2, fill: '#93C5FD' }}
-                  connectNulls={false}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="wechatFirstDerivative" 
-                  stroke="#F87171" 
-                  strokeWidth={1.5}
-                  strokeDasharray="5 5"
-                  dot={{ fill: '#F87171', strokeWidth: 1, r: 0.5 }}
-                  activeDot={{ r: 2, fill: '#FCA5A5' }}
-                  connectNulls={false}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="instagramSecondDerivative" 
-                  stroke="#93C5FD" 
-                  strokeWidth={1}
-                  strokeDasharray="2 2"
-                  dot={{ fill: '#93C5FD', strokeWidth: 1, r: 0.3 }}
-                  activeDot={{ r: 1.5, fill: '#DBEAFE' }}
-                  connectNulls={false}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="wechatSecondDerivative" 
-                  stroke="#FCA5A5" 
-                  strokeWidth={1}
-                  strokeDasharray="2 2"
-                  dot={{ fill: '#FCA5A5', strokeWidth: 1, r: 0.3 }}
-                  activeDot={{ r: 1.5, fill: '#FEE2E2' }}
-                  connectNulls={false}
-                />
-              </LineChart>
+              {useBarChart ? (
+                <BarChart
+                  data={chartData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 20,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="#9CA3AF"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="#9CA3AF"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => value.toLocaleString()}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar 
+                    dataKey="instagram" 
+                    fill="#3B82F6"
+                    name="Instagram"
+                  />
+                  <Bar 
+                    dataKey="wechat" 
+                    fill="#EF4444"
+                    name="WeChat"
+                  />
+                  {showSecondDerivative ? (
+                    <>
+                      <Line 
+                        type="monotone" 
+                        dataKey="instagramSecondDerivative" 
+                        stroke="#93C5FD" 
+                        strokeWidth={1}
+                        strokeDasharray="2 2"
+                        dot={{ fill: '#93C5FD', strokeWidth: 1, r: 0.3 }}
+                        activeDot={{ r: 1.5, fill: '#DBEAFE' }}
+                        connectNulls={false}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="wechatSecondDerivative" 
+                        stroke="#FCA5A5" 
+                        strokeWidth={1}
+                        strokeDasharray="2 2"
+                        dot={{ fill: '#FCA5A5', strokeWidth: 1, r: 0.3 }}
+                        activeDot={{ r: 1.5, fill: '#FEE2E2' }}
+                        connectNulls={false}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Line 
+                        type="monotone" 
+                        dataKey="instagramFirstDerivative" 
+                        stroke="#60A5FA" 
+                        strokeWidth={1.5}
+                        strokeDasharray="5 5"
+                        dot={{ fill: '#60A5FA', strokeWidth: 1, r: 0.5 }}
+                        activeDot={{ r: 2, fill: '#93C5FD' }}
+                        connectNulls={false}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="wechatFirstDerivative" 
+                        stroke="#F87171" 
+                        strokeWidth={1.5}
+                        strokeDasharray="5 5"
+                        dot={{ fill: '#F87171', strokeWidth: 1, r: 0.5 }}
+                        activeDot={{ r: 2, fill: '#FCA5A5' }}
+                        connectNulls={false}
+                      />
+                    </>
+                  )}
+                </BarChart>
+              ) : (
+                <LineChart
+                  data={chartData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 20,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="#9CA3AF"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    stroke="#9CA3AF"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => value.toLocaleString()}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="instagram" 
+                    stroke="#3B82F6" 
+                    strokeWidth={2}
+                    dot={{ fill: '#3B82F6', strokeWidth: 2, r: 1 }}
+                    activeDot={{ r: 3, fill: '#60A5FA' }}
+                    connectNulls={true}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="wechat" 
+                    stroke="#EF4444" 
+                    strokeWidth={2}
+                    dot={{ fill: '#EF4444', strokeWidth: 2, r: 1 }}
+                    activeDot={{ r: 3, fill: '#F87171' }}
+                    connectNulls={true}
+                  />
+                  {showSecondDerivative ? (
+                    <>
+                      <Line 
+                        type="monotone" 
+                        dataKey="instagramSecondDerivative" 
+                        stroke="#93C5FD" 
+                        strokeWidth={1}
+                        strokeDasharray="2 2"
+                        dot={{ fill: '#93C5FD', strokeWidth: 1, r: 0.3 }}
+                        activeDot={{ r: 1.5, fill: '#DBEAFE' }}
+                        connectNulls={false}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="wechatSecondDerivative" 
+                        stroke="#FCA5A5" 
+                        strokeWidth={1}
+                        strokeDasharray="2 2"
+                        dot={{ fill: '#FCA5A5', strokeWidth: 1, r: 0.3 }}
+                        activeDot={{ r: 1.5, fill: '#FEE2E2' }}
+                        connectNulls={false}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Line 
+                        type="monotone" 
+                        dataKey="instagramFirstDerivative" 
+                        stroke="#60A5FA" 
+                        strokeWidth={1.5}
+                        strokeDasharray="5 5"
+                        dot={{ fill: '#60A5FA', strokeWidth: 1, r: 0.5 }}
+                        activeDot={{ r: 2, fill: '#93C5FD' }}
+                        connectNulls={false}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="wechatFirstDerivative" 
+                        stroke="#F87171" 
+                        strokeWidth={1.5}
+                        strokeDasharray="5 5"
+                        dot={{ fill: '#F87171', strokeWidth: 1, r: 0.5 }}
+                        activeDot={{ r: 2, fill: '#FCA5A5' }}
+                        connectNulls={false}
+                      />
+                    </>
+                  )}
+                </LineChart>
+              )}
             </ResponsiveContainer>
           </div>
         </div>
@@ -443,4 +558,3 @@ const Index = () => {
 };
 
 export default Index;
-
