@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Ignore IDE flags, files will be made at build
-import instadata from '../backend/runfiles/instadata.json';
-import wechatdata from '../backend/runfiles/wechatdata.json';
+import instadata from '../backend/input/instadata.json';
+import wechatdata from '../backend/dummyinput/dummywechatdata.json';
 
 const Index = () => {
   const [showDataTypesInfo, setShowDataTypesInfo] = useState(false);

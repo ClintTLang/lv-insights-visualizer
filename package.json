@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "npm run preview",
-    "analyze": "python src/backend/DataAnalyzer.py"
+    "analyze": "python src/backend/ScrapeAndAnalyze.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
