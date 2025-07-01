@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ComposedChart } from 'recharts';
 import { Switch } from "@/components/ui/switch";
 
 // Ignore IDE flags, files will be made at build
@@ -342,7 +343,7 @@ const Index = () => {
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               {useBarChart ? (
-                <BarChart
+                <ComposedChart
                   data={chartData}
                   margin={{
                     top: 20,
@@ -424,7 +425,7 @@ const Index = () => {
                       />
                     </>
                   )}
-                </BarChart>
+                </ComposedChart>
               ) : (
                 <LineChart
                   data={chartData}
