@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -273,7 +274,7 @@ const Index = () => {
                   strokeWidth={2}
                   dot={{ fill: '#3B82F6', strokeWidth: 2, r: 1 }}
                   activeDot={{ r: 3, fill: '#60A5FA' }}
-                  connectNulls={false}
+                  connectNulls={true}
                 />
                 <Line 
                   type="monotone" 
@@ -282,7 +283,7 @@ const Index = () => {
                   strokeWidth={2}
                   dot={{ fill: '#EF4444', strokeWidth: 2, r: 1 }}
                   activeDot={{ r: 3, fill: '#F87171' }}
-                  connectNulls={false}
+                  connectNulls={true}
                 />
               </LineChart>
             </ResponsiveContainer>
